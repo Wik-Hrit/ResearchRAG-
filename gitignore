@@ -1,0 +1,6 @@
+.env
+faiss_index/
+papers/
+__pycache__/
+*.pyc
+.DS_Store
