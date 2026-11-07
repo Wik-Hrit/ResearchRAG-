@@ -96,3 +96,14 @@ def test_public_mode_isolates_papers_and_limits_questions(tmp_path, monkeypatch,
     assert any("readout layer [1]" in m.value for m in at.markdown)
     assert any("Demo limit of 1 questions" in w.value for w in at.warning)
     assert at.chat_input[0].disabled
+
+
+def test_streamlit_secrets_are_used_when_no_env_key(tmp_path, monkeypatch, embeddings, make_pdf):
+    make_pdf("rc.pdf", ["Echo state networks train only the readout layer."], folder=tmp_path / "papers")
+    at = _patched_app(monkeypatch, embeddings, tmp_path)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    at.secrets["GROQ_API_KEY"] = "from-secrets"
+    at.run()
+
+    assert not any("Set GROQ_API_KEY" in e.value for e in at.error)
+    assert len(at.chat_input) == 1

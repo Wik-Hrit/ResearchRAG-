@@ -19,6 +19,16 @@ st.title("📚 ResearchRAG")
 st.caption("Agentic RAG over research papers: grades what it retrieves, rewrites weak queries, "
            "checks its answer is grounded, and refuses when the papers don't support an answer.")
 
+# ---------- secrets ----------
+# On Streamlit Cloud, values from App settings > Secrets live in st.secrets. Copy them into
+# environment variables so the rest of the code (which reads os.environ) sees them.
+try:
+    for _key, _value in st.secrets.items():
+        if isinstance(_value, (str, int, float, bool)):
+            os.environ.setdefault(_key, str(_value))
+except Exception:
+    pass  # no secrets file when running locally; .env is used instead
+
 # ---------- public deployment safeguards ----------
 # On Streamlit Cloud, set these under App settings > Secrets (they become env vars).
 PUBLIC_MODE = os.getenv("PUBLIC_MODE") == "1"          # per-visitor private uploads + limits
@@ -83,7 +93,7 @@ with st.sidebar:
         st.session_state.messages = []
 
 if not os.getenv("GROQ_API_KEY"):
-    st.error("Set GROQ_API_KEY in a .env file to use the assistant.")
+    st.error("Set GROQ_API_KEY in a .env file (local) or in App settings > Secrets (Streamlit Cloud).")
     st.stop()
 
 
