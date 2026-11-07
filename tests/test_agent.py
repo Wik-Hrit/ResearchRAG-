@@ -145,12 +145,30 @@ def test_answer_without_citations_is_not_accepted():
     assert llm.calls.count("ground") == 1  # uncited answer was rejected without an LLM call
 
 
-def test_model_saying_not_found_leads_to_refusal():
+def test_model_saying_not_found_refuses_when_no_rewrites_left():
     llm = ScriptedLLM(grade=["yes"], generate=[NOT_FOUND])
-    out = ResearchAgent(llm, retriever({"*": [(ESN_DOC, 0.9)]}), settings()).ask("q")
+    out = ResearchAgent(llm, retriever({"*": [(ESN_DOC, 0.9)]}), settings(max_rewrites=0)).ask("q")
 
     assert out["status"] == "refused"
     assert out["generations"] == 1
+
+
+def test_not_found_triggers_new_search_then_answers():
+    llm = ScriptedLLM(
+        grade=["yes", "yes"],
+        generate=[NOT_FOUND, "BPTT has vanishing gradients [1]."],
+        rewrite=["backpropagation through time vanishing gradient"],
+        ground=["yes"],
+    )
+    results = {
+        "q": [(NOISE_DOC, 0.5)],
+        "backpropagation through time vanishing gradient": [(BPTT_DOC, 0.9)],
+    }
+    out = ResearchAgent(llm, retriever(results), settings()).ask("q")
+
+    assert out["status"] == "answered"
+    assert out["rewrites"] == 1
+    assert out["relevant"] == [BPTT_DOC]
 
 
 def test_no_retrieval_results_goes_straight_to_rewrite():

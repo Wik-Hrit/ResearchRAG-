@@ -19,7 +19,7 @@ class Settings:
     embedding_backend: str = field(default_factory=lambda: os.getenv("EMBEDDING_BACKEND", "fastembed"))
     embedding_model: str = field(
         default_factory=lambda: os.getenv(
-            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+            "EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"
         )
     )
     # Check https://console.groq.com/docs/models for currently available models.
@@ -31,7 +31,7 @@ class Settings:
     chunk_overlap: int = 150
 
     # Retrieval
-    top_k: int = 4
+    top_k: int = 6
     # Minimum relevance score (0 to 1) a chunk needs to be passed on to the agent.
     similarity_threshold: float = 0.25
 

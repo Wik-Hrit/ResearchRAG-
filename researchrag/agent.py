@@ -6,9 +6,9 @@ Instead of always doing retrieve -> generate, the agent decides its next step:
                      |                                 ^              |
                      | none relevant                   +--regenerate--+ (not grounded)
                      v                                                |
-                rewrite_query -> retrieve                     limit reached
+                rewrite_query <---- answer not in these chunks -------+
                      |                                                |
-                     +-- rewrite limit reached --> refuse <-----------+
+                     +-- rewrite limit reached --> refuse <-- limits reached
 
 Every decision is written to `trace`, so the UI can show why the agent answered or refused.
 """
@@ -166,7 +166,13 @@ class ResearchAgent:
         ).strip('"')
         rewrites = state.get("rewrites", 0) + 1
         msg = f"Rewrote query (attempt {rewrites}): '{new_query}'"
-        return {"query": new_query, "rewrites": rewrites, "trace": state["trace"] + [msg]}
+        # A new search gets a fresh generation budget; the loop stays bounded by max_rewrites.
+        return {
+            "query": new_query,
+            "rewrites": rewrites,
+            "generations": 0,
+            "trace": state["trace"] + [msg],
+        }
 
     def generate(self, state: AgentState) -> AgentState:
         docs = state["relevant"]
@@ -234,6 +240,9 @@ class ResearchAgent:
         if state.get("grounded"):
             return "finish"
         if NOT_FOUND in state.get("answer", ""):
+            # The relevant chunks weren't enough: search again with a better query if allowed.
+            if state.get("rewrites", 0) < self.settings.max_rewrites:
+                return "rewrite_query"
             return "refuse"
         if state.get("generations", 0) < self.settings.max_generations:
             return "generate"
@@ -265,7 +274,12 @@ class ResearchAgent:
         g.add_conditional_edges(
             "check_grounding",
             self.route_after_check,
-            {"finish": "finish", "generate": "generate", "refuse": "refuse"},
+            {
+                "finish": "finish",
+                "generate": "generate",
+                "rewrite_query": "rewrite_query",
+                "refuse": "refuse",
+            },
         )
         g.add_edge("finish", END)
         g.add_edge("refuse", END)
