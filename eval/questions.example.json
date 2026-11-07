@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Why does backpropagation through time struggle with long sequences?",
+    "source": "reservoir_computing.pdf",
+    "page": 4
+  },
+  {
+    "question": "Which part of an echo state network is trained?",
+    "source": "reservoir_computing.pdf",
+    "page": 2
+  },
+  {
+    "question": "How is the watermark detected in generated text?",
+    "source": "kirchenbauer_watermark.pdf",
+    "page": 3
+  }
+]

@@ -1,7 +1,18 @@
-langchain
-langchain-community
-langchain-groq
-faiss-cpu
-sentence-transformers
-pypdf
-python-dotenv
+langchain-core>=1.0
+langchain-community>=0.4
+langchain-text-splitters>=1.0
+langchain-groq>=1.0
+langgraph>=1.0
+faiss-cpu>=1.8
+fastembed>=0.5
+pypdf>=5.0
+python-dotenv>=1.0
+streamlit>=1.40
+
+# optional: EMBEDDING_BACKEND=huggingface needs these (adds PyTorch)
+# langchain-huggingface>=1.0
+# sentence-transformers>=3.0
+
+# tests
+pytest>=8.0
+reportlab>=4.0
